@@ -1,0 +1,554 @@
+                    //declared vairables
+var ballSpeed = 1;
+var playerSpeed = 1;
+var computerSpeed = 1;
+var computerLives = 5;
+var playerLives = 5;
+var livesSetting = 5;
+var started = false;
+var restarted;
+var bounceCount = 0;
+var upgradeSpawned = false;
+var upgradeNumber = 0;
+var playerTurn = true;
+                    //Ball variables
+var xSpeed = 0;
+var ySpeed = 0;
+var xBall = 147;
+var yBall = 212;
+var canBounce = true;
+var ballSpeedMultiplier = 0.5;
+                    //Paddle variables
+var moveLeft;
+var moveRight;
+var playerPaddleX = 115;
+var playerPaddleY = 410;
+var playerPaddleSpeed;
+var playerPaddleMultiplier = 1;
+                    //computer variables
+var computerPaddleX = 95;
+var computerPaddleY = 60;
+var computerPaddleSpeed;
+var computerPaddleMultiplier = 5;
+var computerSetSpeed = 1;
+
+                    //gameplay
+onEvent("leftButton","mousedown", function(){
+  if(started == false){
+    startGame();
+    started = true;
+  }
+  moveLeft = true;
+});
+onEvent("leftButton","mouseup", function(){
+  moveLeft = false;
+});
+onEvent("rightButton","mousedown", function(){
+  if(started == false){
+    startGame();
+    started = true;
+  }
+  moveRight = true;
+});
+onEvent("rightButton","mouseup", function(){
+  moveRight = false;
+});
+
+
+onEvent("gameScreen", "keydown", function(event) {
+  if(started == false){
+    startGame();
+    started = true;
+  }
+  if (event.key == "Left") {
+    moveLeft = true;
+  } else if (event.key == "Right") {
+    moveRight = true;
+  }
+});
+onEvent("gameScreen", "keyup", function(event) {
+  if (event.key == "Left") {
+    moveLeft = false;
+  } else if (event.key == "Right") {
+    moveRight = false;
+  }
+});
+
+                //button clicks
+onEvent("difficultySelect", "click", function(){
+  hideElement("difficultySelect");
+  hideElement("helpSelect");
+  hideElement("rulesSelect");
+  hideElement("settingsSelect");
+  showElement("easySelect");
+  showElement("mediumSelect");
+  showElement("hardSelect");
+  showElement("backSelect");
+  });
+onEvent("backSelect", "click", function(){
+  showElement("difficultySelect");
+  showElement("helpSelect");
+  showElement("settingsSelect");
+  showElement("rulesSelect");
+  hideElement("easySelect");
+  hideElement("mediumSelect");
+  hideElement("hardSelect");
+  hideElement("backSelect");
+  });
+onEvent("helpBackSelect", "click", function(){
+  setScreen("welcomeScreen");
+});
+onEvent("helpSelect", "click", function(){
+  setScreen("helpScreen");
+});
+onEvent("easySelect", "click", function(){
+  loadGame(2);
+  timedLoop(17, workingGame);
+});
+onEvent("mediumSelect", "click", function(){
+  loadGame(4);
+  timedLoop(17, workingGame);
+});
+onEvent("hardSelect", "click", function(){
+  loadGame(8);
+  timedLoop(17, workingGame);
+});
+onEvent("settingsSelect", "click", function(){
+  setScreen("settingsScreen");
+});
+onEvent("settingsBackSelect","click", function(){
+  setScreen("welcomeScreen");
+});
+onEvent("pauseSelect", "click", function(){
+  pauseGame();
+  hideElement("pauseSelect");
+  showElement("resumeGameSelect");
+  showElement("endGameSelect");
+  showElement("pausedDarkScreen");
+});
+onEvent("resumeGameSelect", "click", function(){
+  resumeGame();
+  showElement("pauseSelect");
+  hideElement("resumeGameSelect");
+  hideElement("endGameSelect");
+  hideElement("pausedDarkScreen");
+});
+onEvent("endGameSelect", "click", function(){
+  endGame();
+  reset();
+});
+onEvent("rulesSelect", "click", function(){
+  setScreen("rulesScreen");
+});
+onEvent("rulesBackSelect", "click", function(){
+  setScreen("helpScreen");
+});
+onEvent("powerHelpSelect", "click", function(){
+  setScreen("powerUpHelp");
+});
+onEvent("powerUpBackSelect","click",function(){
+  setScreen("helpScreen");
+  setText("PowerUpText","Click on a Power Up to learn about what it does!");
+});
+//power up help buttons
+onEvent("playerPaddleIncreaseIcon", "click", function() {
+  setText("PowerUpText","This Power Up will increase the size of your paddel!");
+});
+onEvent("playerPaddleDecreaseIcon", "click", function() {
+  setText("PowerUpText","This Power Up will decrease the size of your paddel.");
+});
+onEvent("computerPaddleIncreaseIcon", "click", function() {
+  setText("PowerUpText","This Power Up will increase the size of the computers paddel.");
+});
+onEvent("computerPaddleDecreaseIcon", "click", function() {
+  setText("PowerUpText","This Power Up will decrease the size of the computers paddel.");
+});
+onEvent("playerSpeedIncreaseIcon", "click", function() {
+  setText("PowerUpText","This Power Up will increase the speed of your paddel.");
+});
+onEvent("playerSpeedDecreaseIcon", "click", function() {
+  setText("PowerUpText","This Power Up will decrease the speed of your paddel.");
+});
+onEvent("computerSpeedIncreaseIcon", "click", function() {
+  setText("PowerUpText","This Power Up will increase the speed of the computers paddel.");
+});
+onEvent("computerSpeedDecreaseIcon", "click", function() {
+  setText("PowerUpText","This Power Up will decrease the speed of the computers paddel.");
+});
+onEvent("winnerScreen", "click", function() {
+  setScreen("welcomeScreen");
+  endGame();
+});
+
+
+                      //functions
+function endGame(){
+  setScreen("welcomeScreen");
+  showElement("difficultySelect");
+  showElement("helpSelect");
+  showElement("rulesSelect");
+  showElement("settingsSelect");
+  hideElement("easySelect");
+  hideElement("mediumSelect");
+  hideElement("hardSelect");
+  hideElement("backSelect");
+  ballSpeed = 1;
+  playerSpeed = 1;
+  computerSpeed = 1;
+  computerPaddleMultiplier = 5;
+  playerPaddleMultiplier = 1;
+  showElement("pauseSelect");
+  hideElement("resumeGameSelect");
+  hideElement("endGameSelect");
+  hideElement("pausedDarkScreen");
+  xSpeed = 0;
+  ySpeed = 0;
+  moveLeft = false;
+  moveRight = false;
+  restarted = true;
+}
+
+//resumes after pause
+function resumeGame(){
+  timedLoop(17, workingGame);
+  showElement("startingText");
+}
+function pauseGame() {
+  stopTimedLoop();
+  hideElement("startingText");
+}
+
+//moves to game, and sets speed of computer
+function loadGame(dif){
+  setScreen("gameScreen");
+  computerSetSpeed = dif;
+  computerPaddleMultiplier = dif;
+  setText("computerLives", livesSetting);
+  setText("playerLives", livesSetting);
+  computerLives = livesSetting;
+  playerLives = livesSetting;
+}
+
+//starts game (ball movement)
+function startGame(){
+  hideElement("startingText");
+  while (xSpeed === 0) {
+    xSpeed = randomNumber(-5,5);
+  }
+  ySpeed = randomNumber(3, 5);
+  restarted = false;
+}
+
+//function to move the paddle
+function movePlayerPaddle() {
+  if (moveLeft && !moveRight && playerPaddleX > 0) {
+    playerPaddleSpeed = -7 * playerPaddleMultiplier;
+  }
+  else if (moveRight && !moveLeft && playerPaddleX + getProperty("playerPaddle","width") < 320) {
+    playerPaddleSpeed = 7 * playerPaddleMultiplier;
+  }
+  else {
+    playerPaddleSpeed = 0;
+  }
+}
+
+//moves the computer paddle to hit the ball
+function moveComputerPaddle(){
+  if (computerPaddleX + (getProperty("computerPaddle","width")/2) > xBall + 3 && computerPaddleX > 0){
+    computerPaddleSpeed = -computerPaddleMultiplier;
+  } else if (computerPaddleX + (getProperty("computerPaddle","width")/2) < xBall - 3 && computerPaddleX+getProperty("computerPaddle","width") < 320){
+    computerPaddleSpeed = computerPaddleMultiplier;
+  } else {
+    computerPaddleSpeed = 0;
+  }
+}
+//check for deaths
+function computerDeathCheck(y1){
+  return y1<46;
+}
+function playerDeathCheck(y1){
+  return y1>435;
+}
+
+//allows for a bounce off paddels and walls
+function checkBounce() {
+  if (xBall + getProperty("ball","width") > 320 || xBall < 0) {
+    xSpeed = -xSpeed;
+  } else if (yBall < 0 && !canBounce) {
+    ySpeed = -ySpeed;
+    canBounce = true;
+  }
+  //computer Hit
+  if (playerTurn != true){
+    if ((xBall < computerPaddleX + getProperty("computerPaddle","width") && xBall > computerPaddleX) && (yBall < computerPaddleY + getProperty("computerPaddle","height") && yBall > computerPaddleY)) {
+      canBounce = false;
+      playerTurn = true;
+      if (xBall < computerPaddleX+(getProperty("computerPaddle","width")/3)){
+        xSpeed = xSpeed - 1;
+      } else if (computerPaddleX + 2*(getProperty("computerPaddle","width")/3) < xBall){
+        xSpeed = xSpeed + 1;
+      }
+      ySpeed = -ySpeed;
+      setTimeout(function(){
+        canBounce = true;
+      }, 50);
+      bounceCount++;
+      if (bounceCount%3 == 0){
+        ballSpeedMultiplier = ballSpeedMultiplier + 0.15;
+      }
+    }
+  }
+  //player hit
+  if (playerTurn){
+    if (checkCollision(xBall, yBall, getProperty("ball","width"), getProperty("ball","height"), playerPaddleX, playerPaddleY || computerPaddleY, getProperty("playerPaddle","height") || getProperty("computerPaddle","height"), getProperty("playerPaddle","width") || getProperty("computerPaddle", "width")) && canBounce) {
+      canBounce = false;
+      playerTurn = false;
+      if (xBall < playerPaddleX+(getProperty("playerPaddle","width")/3)){
+        xSpeed = xSpeed - 2;
+      } else if (playerPaddleX + 2*(getProperty("playerPaddle","width")/3) < xBall){
+        xSpeed = xSpeed + 2;
+      }
+      ySpeed = -ySpeed;
+      setTimeout(function(){
+        canBounce = true;
+      }, 50);
+      bounceCount++;
+      if (bounceCount%3 == 0){
+        ballSpeedMultiplier = ballSpeedMultiplier + 0.15;
+      }
+    }
+  }
+  
+  //check if ball passes player
+  if(playerDeathCheck(yBall)){
+    playerLives = playerLives - 1;
+    setText("playerLives", playerLives);
+    ballSpeedMultiplier = 0.5;
+    if (playerLives == 1 || computerLives == 1) {
+      stopTimedLoop();
+      winnerUpdating();
+      setScreen("winnerScreen");
+    }
+    reset();
+  }
+  //check if ball passes computer
+  if(computerDeathCheck(yBall)){
+    computerLives = computerLives - 1;
+    setText("computerLives", computerLives);
+    ballSpeedMultiplier = 0.5;
+    if (playerLives == 0 || computerLives == 0) {
+      stopTimedLoop();
+      winnerUpdating();
+      setScreen("winnerScreen");
+    }
+    reset();
+  }
+}
+function checkCollision(x1, y1, h1, w1, x2, y2, h2, w2) {
+  return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
+}
+function reset(){
+  xSpeed = 0;
+  ySpeed = 0;
+  playerPaddleSpeed = 0;
+  computerPaddleSpeed = 0;
+  moveLeft = false;
+  moveRight = false;
+  restarted = true;
+  started = false;
+  playerTurn = true;
+  showElement("startingText");
+  xBall = 147;
+  yBall = 212;
+  playerPaddleX = 115;
+  computerPaddleMultiplier = computerSetSpeed;
+  playerPaddleMultiplier = 1;
+  setImageURL("playerPaddle","Paddels_Medium-Paddle.png");
+  setProperty("playerPaddle","width",125);
+  setImageURL("computerPaddle","Paddels_Medium-Paddle.png");
+    setProperty("computerPaddle","width",125);
+  canBounce = true;
+  hideElement("Upgrade");
+  upgradeSpawned = false;
+  setProperty("Upgrade","y",-100);
+  showElement("Upgrade");
+}
+//function that makes it so the winner seen is updated by the winner
+function winnerUpdating(){
+  if (playerLives == 0){
+    setImageURL("winnerTitle", "Paddels_Computer-Wins.png");
+  } else if (computerLives == 0){
+    setImageURL("winnerTitle", "Paddels_Player-Wins.png");
+  }
+}
+//function that is on a loop, and is playing during the game
+function workingGame(){
+  movePlayerPaddle();
+  moveComputerPaddle();
+  checkBounce();
+  checkUpgrades();
+  getUpgrades();
+  moveUpgrade();
+  xBall += xSpeed * ballSpeedMultiplier;
+  yBall += ySpeed * ballSpeedMultiplier;
+  playerPaddleX += playerPaddleSpeed;
+  computerPaddleX += computerPaddleSpeed;
+  setPosition("ball", xBall, yBall);
+  setPosition("computerPaddle", computerPaddleX, computerPaddleY);
+  setPosition("playerPaddle", playerPaddleX, playerPaddleY);
+}
+//function that spawns upgrades
+function getUpgrades(){
+  if(upgradeSpawned != true){
+    upgradeNumber = randomNumber(1,1000);
+    if(upgradeNumber == 1){
+      setImageURL("Upgrade","Paddels_Player-Paddle-Increase.png");
+      setPosition("Upgrade", randomNumber(0,320 - getProperty("Upgrade","width")), -50);
+      upgradeSpawned = true;
+    } else if(upgradeNumber == 2){
+      setImageURL("Upgrade","Paddels_Player-Paddle-Decreasing.png");
+      setPosition("Upgrade", randomNumber(0,320 - getProperty("Upgrade","width")), -50);
+      upgradeSpawned = true;
+   } else if (upgradeNumber == 3){
+      setImageURL("Upgrade","Paddels_Computer-Paddle-Increase.png");
+      setPosition("Upgrade", randomNumber(0,320 - getProperty("Upgrade","width")), -50);
+      upgradeSpawned = true;
+   } else if (upgradeNumber == 4){
+      setImageURL("Upgrade","Paddels_Computer-Paddle-Decreasing.png");
+      setPosition("Upgrade", randomNumber(0,320 - getProperty("Upgrade","width")), -50);
+      upgradeSpawned = true;
+   } else if (upgradeNumber == 5){
+      setImageURL("Upgrade","Paddels_Player-Speed-Increase.png");
+      setPosition("Upgrade", randomNumber(0,320 - getProperty("Upgrade","width")), -50);
+      upgradeSpawned = true;
+   } else if (upgradeNumber == 6){
+      setImageURL("Upgrade","Paddels_Player-Speed-Decrease.png");
+      setPosition("Upgrade", randomNumber(0,320 - getProperty("Upgrade","width")), -50);
+      upgradeSpawned = true;
+   } else if (upgradeNumber == 7){
+      setImageURL("Upgrade","Paddels_Computer-Speed-Increase.png");
+      setPosition("Upgrade", randomNumber(0,320 - getProperty("Upgrade","width")), -50);
+      upgradeSpawned = true;
+   } else if (upgradeNumber == 8){
+      setImageURL("Upgrade","Paddels_Computer-Speed-Decrease.png");
+      setPosition("Upgrade", randomNumber(0,320 - getProperty("Upgrade","width")), -50);
+      upgradeSpawned = true;
+   }
+  }
+}
+//funcion that moves the upgrade
+function moveUpgrade(){
+  if (started && upgradeSpawned){
+    setProperty("Upgrade","y",getProperty("Upgrade","y") + 1);
+  }
+}
+//function that runs to check for upgrades
+function checkUpgrades(){
+  if (upgradeSpawned){
+    if (checkCollision(getProperty("Upgrade","x"), getProperty("Upgrade","y"), getProperty("Upgrade","width"), getProperty("Upgrade","height"), playerPaddleX, playerPaddleY, getProperty("playerPaddle","height"), getProperty("playerPaddle","width"))){
+      hideElement("Upgrade");
+      upgradeSpawned = false;
+      setProperty("Upgrade","y",-100);
+      showElement("Upgrade");
+      if (upgradeNumber == 1){
+        largerPlayerPaddel();
+      } else if (upgradeNumber == 2){
+        smallerPlayerPaddel();
+      } else if (upgradeNumber == 3){
+        largerComputerPaddel();
+      } else if (upgradeNumber == 4){
+        smallerComputerPaddel();
+      } else if (upgradeNumber == 5){
+        fasterPlayerPaddel();
+      } else if (upgradeNumber == 6){
+        slowerPlayerPaddel();
+      } else if (upgradeNumber == 7){
+        fasterComputerPaddel();
+      } else if (upgradeNumber == 8){
+        slowerComputerPaddel();
+      }
+    } else if(getProperty("Upgrade","y")>450){
+      hideElement("Upgrade");
+      upgradeSpawned = false;
+      setProperty("Upgrade","y",-100);
+      showElement("Upgrade");
+    }
+  }
+}
+
+
+
+
+
+                //upgrades
+function largerPlayerPaddel(){
+  if (getImageURL("playerPaddle") == "Paddels_Short-Paddle.png"){
+    setImageURL("playerPaddle","Paddels_Medium-Paddle.png");
+    setProperty("playerPaddle","width",125);
+  } else{
+    setImageURL("playerPaddle","Paddels_Long-Paddle.png");
+    setProperty("playerPaddle","width",157);
+  }
+}
+function smallerPlayerPaddel(){
+  if (getImageURL("playerPaddle") == "Paddels_Medium-Paddle.png"){
+    setImageURL("playerPaddle","Paddels_Short-Paddle.png");
+    setProperty("playerPaddle","width",88);
+  } else{
+    setImageURL("playerPaddle","Paddels_Medium-Paddle.png");
+    setProperty("playerPaddle","width",125);
+  }
+}
+
+function largerComputerPaddel(){
+  if (getImageURL("computerPaddle") == "Paddels_Short-Paddle.png"){
+    setImageURL("computerPaddle","Paddels_Medium-Paddle.png");
+    setProperty("computerPaddle","width",125);
+  } else{
+    setImageURL("computerPaddle","Paddels_Long-Paddle.png");
+    setProperty("computerPaddle","width",157);
+  }
+}
+function smallerComputerPaddel(){
+  if (getImageURL("computerPaddle") == "Paddels_Medium-Paddle.png"){
+    setImageURL("computerPaddle","Paddels_Short-Paddle.png");
+    setProperty("computerPaddle","width",88);
+  } else{
+    setImageURL("computerPaddle","Paddels_Medium-Paddle.png");
+    setProperty("computerPaddle","width",125);
+  }
+}
+function fasterPlayerPaddel(){
+  playerPaddleMultiplier = playerPaddleMultiplier + 0.5;
+}
+function slowerPlayerPaddel(){
+  if (playerPaddleMultiplier <= 0.5){
+    playerPaddleMultiplier = playerPaddleMultiplier/2;
+  } else {
+    playerPaddleMultiplier = playerPaddleMultiplier - 0.5;
+  }
+}
+function fasterComputerPaddel(){
+  computerPaddleMultiplier = computerPaddleMultiplier + 0.5;
+}
+function slowerComputerPaddel(){
+  if (computerPaddleMultiplier <= 0.5){
+    computerPaddleMultiplier = computerPaddleMultiplier/2;
+  } else {
+    computerPaddleMultiplier = computerPaddleMultiplier - 0.5;
+  }
+}
+function playerExtraLife(){
+  playerLives = playerLives + 1;
+  setText("playerLives", playerLives);
+}
+function computerExtraLife(){
+  computerLives = computerLives + 1;
+  setText("computerLives", computerLives);
+}
+
+//settings
+onEvent("numberOfLivesSlider", "input", function() {
+  setText("numberOfLivesCounter",getNumber("numberOfLivesSlider"));
+  livesSetting = getNumber("numberOfLivesSlider");
+});
